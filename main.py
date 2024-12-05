@@ -214,9 +214,23 @@ def get_user(id):
         user['avatar_url'] = user.pop('avatar')
     
     # For instructor reference COURSES kind and for student reference ENROLLMENTS kind when generating courses lists
-    if user['role'] == 'instructor' or user['role'] == 'student':
-        if 'courses' not in user:
-            user['courses'] = []
+    if user['role'] == 'instructor':
+        instructor_query = client.query(kind=COURSES)
+        instructor_query.add_filter(filter=PropertyFilter('instructor_id', '=', id))
+        instructor_courses = list(instructor_query.fetch())
+        courses_taught = []
+        for course in instructor_courses:
+            courses_taught.append(request.url_root + '/courses/' + str(course.key.id))
+        user['courses'] = courses_taught
+
+    if user['role'] == 'student':
+        student_query = client.query(kind=ENROLLMENTS)
+        student_query.add_filter(filter=PropertyFilter('student_id', '=', id))
+        student_courses = list(student_query.fetch())
+        courses_attended = []
+        for course in student_courses:
+            courses_attended.append(request.url_root + '/courses/' + str(course.key.id))
+        user['courses'] = courses_attended
     
     if 'avatar' in user:
         user.pop('avatar')
@@ -381,9 +395,33 @@ def post_course():
              'self': self_url}, 201)
 
 # 8. Get all courses
+@app.route('/' + COURSES, methods=['GET'])
+def get_courses():
+    request_url = request.url
+    page_limit = request.args.get('limit', 3)
+    page_offset = request.args.get('offset', 0)
+    page_limit = int(page_limit)
+    page_offset = int(page_offset)
+
+    course_query = client.query(kind=COURSES)
+    courses = list(course_query.fetch(limit=page_limit, offset=page_offset))
+
+    for course in courses:
+        course['id'] = course.key.id
+        course['self'] = request_url + '/' + str(course.key.id)
+    
+    new_page_offset = str(page_offset + page_limit)
+    
+    return ({'courses': courses,
+             'next':  })
+
+    
+    
+
+
 
 # 9. Get a course
-@app.route('/courses/' + '<int:id>', methods=['GET'])
+@app.route('/' + COURSES + '/<int:id>', methods=['GET'])
 def get_course(id):
     request_url = request.url
 
