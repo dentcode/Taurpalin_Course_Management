@@ -252,8 +252,9 @@ def post_avatar(id):
     user_key = client.key(USERS, id)
     user = client.get(key=user_key)
     if user is None or user['sub'] != payload['sub']:
-         if user['role'] != 'admin':
-             return ERROR_403, 403
+        return ERROR_403, 403
+         #if user['role'] != 'admin':
+             #return ERROR_403, 403
     # Set file_obj to the file sent in the request
     file_obj = request.files['file']
     # If the multipart form data has a part with name 'tag', set the
@@ -290,8 +291,9 @@ def get_avatar(id):
     user_key = client.key(USERS, id)
     user = client.get(key=user_key)
     if user is None or user['sub'] != payload['sub']:
-         if user['role'] != 'admin':
-             return ERROR_403, 403
+         return ERROR_403, 403
+         #if user['role'] != 'admin':
+             #return ERROR_403, 403
     
     if 'avatar' not in user or user['avatar'] == 'no':
         return ERROR_404, 404
@@ -319,8 +321,7 @@ def delete_avatar(id):
     user_key = client.key(USERS, id)
     user = client.get(key=user_key)
     if user is None or user['sub'] != payload['sub']:
-         if user['role'] != 'admin':
-             return ERROR_403, 403
+        return ERROR_403, 403
 
     # Verify user has an avatar
     if 'avatar' not in user or user['avatar'] == 'no':
@@ -397,7 +398,7 @@ def post_course():
 # 8. Get all courses
 @app.route('/' + COURSES, methods=['GET'])
 def get_courses():
-    request_url = request.url
+    request_url = request.base_url
     page_limit = request.args.get('limit', 3)
     page_offset = request.args.get('offset', 0)
     page_limit = int(page_limit)
@@ -413,12 +414,7 @@ def get_courses():
     new_page_offset = str(page_offset + page_limit)
     
     return ({'courses': courses,
-             'next':  })
-
-    
-    
-
-
+             'next':  request_url + '?limit=' + str(page_limit) + '&offset=' + new_page_offset})
 
 # 9. Get a course
 @app.route('/' + COURSES + '/<int:id>', methods=['GET'])
@@ -470,9 +466,9 @@ def update_course(id):
             if user['role'] == 'instructor':
                 if user.key.id != content['instructor_id']:
                     return ERROR_400, 400
-    
-    for property, property_value in content:
-        course.update({property:property_value})
+    print(content)
+    for key in content:
+        course[key] = content[key]
     client.put(course)
     course['id'] = course.key.id
     course['self'] = request_url
@@ -547,12 +543,18 @@ def update_enrollment(id):
     user_query = client.query(kind=USERS)
     user_query.add_filter(filter=PropertyFilter('role', '=', 'student'))
     student_users = list(user_query.fetch())
-    for student in content['add']:
-        if student not in student_users:
-            return ERROR_409
-    for student in content['remove']:
-        if student not in student_users:
-            return ERROR_409
+    student_users_id = []
+    for student in student_users:
+        student_users_id.append(student.key.id)
+
+    if content['add']:
+        for student in content['add']:
+            if student not in student_users_id:
+                return ERROR_409, 409
+    if content['remove']:
+        for student in content['remove']:
+            if student not in student_users_id:
+                return ERROR_409, 409
     
     # Add enrollment
     for student in content['add']:
@@ -583,7 +585,6 @@ def update_enrollment(id):
         
     return '', 200
 
- 
 # 13. Get enrollment in a course
 @app.route('/' + COURSES + '/<int:id>' + "/students", methods=['GET'])
 def get_enrollment(id):
