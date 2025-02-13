@@ -14,7 +14,7 @@ The REST API for Tarpaulin includes 13 endpoints, with most requiring authentica
 | --- | --- | --- | --- | --- |
 | 1 | User login | POST /users/login | Pre-created Auth0 users with username and password | Use Auth0 to issue JWTs. | 
 | 2	| Get all users | GET /users | Admin only | Summary information of all 9 users. | No info about avatar or courses. | 
-| 3	| Get a User | GET /users/:id | Admin. Or user with JWT matching id | Detailed info about the user, including avatar (if any) and courses (for instructors and students) | 
+| 3	| Get a User | GET /users/:id | Admin. Or user with JWT matching id | Detailed info about the user, including avatar (if any) and courses (for instructors and students). | 
 | 4	| Create/update a user's avatar | POST /users/:id/avatar | User with JWT matching id | Upload file to Google Cloud Storage. | 
 | 5	| Get a user's avatar | GET /users/:id/avatar | User with JWT matching id | Read and return file from Google Cloud Storage. | 
 | 6	| Delete a user's avatar | DELETE /users/:id/avatar | User with JWT matching id | Delete file from Google Cloud Storage. | 
