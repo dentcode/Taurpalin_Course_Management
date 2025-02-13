@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 from google.cloud import datastore, storage
 from google.cloud.datastore.query import PropertyFilter
 
@@ -15,17 +15,17 @@ app.secret_key = 'SECRET_KEY'
 
 client = datastore.Client()
 
+# Name of Google storage bucket
 PHOTO_BUCKET = 'assignment6_delacrig'
 
-LODGINGS = "lodgings"
-USERS = 'users'
 ERROR_400 = {"Error" : "The request body is invalid"}
-LOGIN_ARGUMENTS = ['username', 'password']
 ERROR_401 = {'Error': "Unauthorized"}
 ERROR_404 = {"Error": "Not found"}
 ERROR_403 = {"Error": "You don't have permission on this resource"}
 ERROR_409 = {'Error': 'Enrollment data is invalid'}
 
+LOGIN_ARGUMENTS = ['username', 'password']
+USERS = 'users'
 COURSES = 'courses'
 COURSES_ARGUMENTS = ['subject', 'number', 'title', 'term', 'instructor_id']
 ENROLLMENTS = 'enrollments'
@@ -125,21 +125,11 @@ def verify_jwt(request):
                             "description":
                                 "No RSA key in JWKS"}, 401)
 
-
+# Index
 @app.route('/')
 def index():
-    return "Please navigate to /users to use this API"\
+    return render_template('index.html')
 
-    if request.method == 'POST':
-        payload = verify_jwt(request)
-        content = request.get_json()
-        new_lodging = datastore.entity.Entity(key=client.key(LODGINGS))
-        new_lodging.update({"name": content["name"], "description": content["description"],
-          "price": content["price"]})
-        client.put(new_lodging)
-        return jsonify(id=new_lodging.key.id)
-    else:
-        return jsonify(error='Method not recogonized')
 
 # Decode the JWT supplied in the Authorization header
 @app.route('/decode', methods=['GET'])
