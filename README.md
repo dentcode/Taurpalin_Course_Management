@@ -1,2 +1,2 @@
-# Taurpalin Course Management Tool - CS340 Portfolio Project
+# Taurpalin Course Management - CS340 Portfolio Project
 
