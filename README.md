@@ -1,4 +1,4 @@
-# Taurpalin Course Management Tool - CS493 Portfolio Project
+# Taurpalin Course Management Tool - Portfolio Project
 
 # Summary
 
